@@ -3,12 +3,25 @@ const quoteText = document.getElementById('quote');
 const authorText = document.getElementById('author');
 const twitterBtn = document.getElementById('twitter');
 const newQuoteBtn = document.getElementById('new-quote');
+const loader = document.getElementById('loader');
+let errorCounter = 0;
 
+const showLoadingSpinner = () => {
+    loader.hidden = false;
+    quoteContainer.hidden = true;
+}
+
+const removeLoadingSpinner = () => {
+    if (!loader.hidden) {
+        loader.hidden = true;
+        quoteContainer.hidden = false;
+    }
+}
 
 // get quote from API
-
 async function getQuote() {
-    const proxyUrl = 'https://shrouded-wave-89193.herokuapp.com/';
+    showLoadingSpinner();
+    const proxyUrl = 'https://shrouded-wave-89193.herokuapp.com/'; //personal proxy url
     const apiUrl = 'http://api.forismatic.com/api/1.0/?method=getQuote&lang=en&format=json';
     try {
         const response = await fetch(proxyUrl + apiUrl);
@@ -26,9 +39,16 @@ async function getQuote() {
             quoteText.classList.remove('long-quote')
         }
         quoteText.innerText = data.quoteText;
+        removeLoadingSpinner();
     } catch (error) {
-        getQuote();
-        console.log('Ooops, no quote available', error)
+        //stop recursive call after 10 errors
+        if (errorCounter < 10) {
+            errorCounter++;
+            getQuote();
+        } else {
+            console.log('Ooops, no quote available', error); 
+            errorCounter = 0;
+        }        
     }
 }
 
